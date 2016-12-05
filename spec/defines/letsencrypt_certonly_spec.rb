@@ -98,13 +98,13 @@ describe 'letsencrypt::certonly' do
 
       describe 'when specifying custom environment variables' do
         let(:title) { 'foo.example.com' }
-        let(:params) { { environment: ['FOO=bar', 'FIZZ=buzz'] } }
+        let(:params) { { venv_vars: ['FOO=bar', 'FIZZ=buzz'] } }
         it { is_expected.to contain_exec('letsencrypt certonly foo.example.com').with_environment(['VENV_PATH=/opt/letsencrypt/.venv', 'FOO=bar', 'FIZZ=buzz']) }
       end
 
       context 'with custom environment variables and manage cron' do
         let(:title) { 'foo.example.com' }
-        let(:params) { { environment: ['FOO=bar', 'FIZZ=buzz'], manage_cron: true } }
+        let(:params) { { venv_vars: ['FOO=bar', 'FIZZ=buzz'], manage_cron: true } }
 
         it { is_expected.to contain_cron('letsencrypt renew cron foo.example.com').with_environment(['VENV_PATH=/opt/letsencrypt/.venv', 'FOO=bar', 'FIZZ=buzz']) }
       end
