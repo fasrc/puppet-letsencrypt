@@ -72,7 +72,7 @@ define letsencrypt::certonly (
     path        => $::path,
     environment => concat([ $venv_path_var ], $venv_vars),
     creates     => $live_path,
-    require     => Class['letsencrypt'],
+    require     => Exec['initialize letsencrypt'],
   }
 
   if $manage_cron {
