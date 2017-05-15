@@ -48,8 +48,8 @@
 #   A flag to allow using the 'register-unsafely-without-email' flag.
 # [*cron_scripts_path*]
 #   The path to put the script we'll call with cron. Defaults to $puppet_vardir/letsencrypt.
-# [*certonly*]
-#   A hash containing all the configuration for creating a certonly
+# [*certs*]
+#   A hash of letsencrypt::certonly certs to be created via create_resources
 #
 class letsencrypt (
   $email               = undef,
@@ -71,7 +71,7 @@ class letsencrypt (
   $install_method      = $letsencrypt::params::install_method,
   $agree_tos           = $letsencrypt::params::agree_tos,
   $unsafe_registration = $letsencrypt::params::unsafe_registration,
-  $certonly            = {},
+  $certs               = {},
 ) inherits letsencrypt::params {
   validate_string($path, $repo, $version, $config_file, $package_name, $package_command, $cron_scripts_path)
   if $email {
@@ -110,7 +110,6 @@ class letsencrypt (
     refreshonly => true,
   }
 
-  $real_certonly = hiera_hash('letsencrypt::certonly', $certonly)
-  create_resources(::letsencrypt::certonly, $real_certonly)
+  create_resources(::letsencrypt::certonly, $certs)
 
 }
