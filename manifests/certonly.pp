@@ -19,7 +19,7 @@
 # [*additional_args*]
 #   An array of additional command line arguments to pass to the
 #   `letsencrypt-auto` command.
-# [*environment*]
+# [*venv_vars*]
 #   An optional array of environment variables (in addition to VENV_PATH).
 # [*manage_cron*]
 #   Boolean indicating whether or not to schedule cron job for renewal.
@@ -36,7 +36,7 @@ define letsencrypt::certonly (
   $webroot_paths        = undef,
   $letsencrypt_command  = $letsencrypt::command,
   $additional_args      = undef,
-  $environment          = [],
+  $venv_vars            = [],
   $manage_cron          = false,
   $suppress_cron_output = false,
   $cron_before_command  = undef,
@@ -53,7 +53,7 @@ define letsencrypt::certonly (
   if $additional_args {
     validate_array($additional_args)
   }
-  validate_array($environment)
+  validate_array($venv_vars)
   validate_bool($manage_cron)
   validate_bool($suppress_cron_output)
 
@@ -70,7 +70,7 @@ define letsencrypt::certonly (
   exec { "letsencrypt certonly ${title}":
     command     => $command,
     path        => $::path,
-    environment => concat([ $venv_path_var ], $environment),
+    environment => concat([ $venv_path_var ], $venv_vars),
     creates     => $live_path,
     require     => Class['letsencrypt'],
   }
@@ -103,7 +103,7 @@ define letsencrypt::certonly (
     }
     cron { "letsencrypt renew cron ${title}":
       command     => "${::letsencrypt::cron_scripts_path}/renew-${title}.sh",
-      environment => concat([ $venv_path_var ], $environment),
+      environment => concat([ $venv_path_var ], $venv_vars),
       user        => root,
       hour        => $cron_hour,
       minute      => $cron_minute,
