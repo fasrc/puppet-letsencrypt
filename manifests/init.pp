@@ -9,7 +9,7 @@
 #   precedence over an 'email' setting defined in $config.
 # [*path*]
 #   The path to the letsencrypt installation.
-# [*environment*]
+# [*venv_vars*]
 #   An optional array of environment variables (in addition to VENV_PATH)
 # [*repo*]
 #   A Git URL to install the Let's encrypt client from.
@@ -48,12 +48,14 @@
 #   A flag to allow using the 'register-unsafely-without-email' flag.
 # [*cron_scripts_path*]
 #   The path to put the script we'll call with cron. Defaults to $puppet_vardir/letsencrypt.
+# [*certs*]
+#   A hash of letsencrypt::certonly certs to be created via create_resources
 #
 class letsencrypt (
   $email               = undef,
   $path                = $letsencrypt::params::path,
   $venv_path           = $letsencrypt::params::venv_path,
-  $environment         = [],
+  $venv_vars           = [],
   $repo                = $letsencrypt::params::repo,
   $version             = $letsencrypt::params::version,
   $package_name        = $letsencrypt::params::package_name,
@@ -69,12 +71,13 @@ class letsencrypt (
   $install_method      = $letsencrypt::params::install_method,
   $agree_tos           = $letsencrypt::params::agree_tos,
   $unsafe_registration = $letsencrypt::params::unsafe_registration,
+  $certs               = {},
 ) inherits letsencrypt::params {
   validate_string($path, $repo, $version, $config_file, $package_name, $package_command, $cron_scripts_path)
   if $email {
     validate_string($email)
   }
-  validate_array($environment)
+  validate_array($venv_vars)
   validate_bool($manage_config, $manage_install, $manage_dependencies, $configure_epel, $agree_tos, $unsafe_registration)
   validate_hash($config)
   validate_re($install_method, ['^package$', '^vcs$'])
@@ -103,7 +106,10 @@ class letsencrypt (
   exec { 'initialize letsencrypt':
     command     => "${command_init} -h",
     path        => $::path,
-    environment => concat([ "VENV_PATH=${venv_path}" ], $environment),
+    environment => concat([ "VENV_PATH=${venv_path}" ], $venv_vars),
     refreshonly => true,
   }
+
+  create_resources(::letsencrypt::certonly, $certs)
+
 }
